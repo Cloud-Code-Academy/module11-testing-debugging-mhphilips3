@@ -22,6 +22,32 @@
 @isTest
 public with sharing class LeadTriggerTest {
 
+    
+    @TestSetup
+    static void makeData(){
+        
+        List<String> titles = new List<String>{
+            'Vp of Sales', 'V.P. Marketing', 'Vice President of Engineering', 
+            'Mgr of Operations', 'Head of Department',  
+            'EXEC dir', 'Chief Financial Officer', 
+            'Assistant to the CEO', 'Jr Analyst', 'Deputy Advisor', 
+            'Analyst', 'Software Engineer', 'Consultant'
+        };
+        
+        List<Lead> leadList = new List<Lead>();
+        Integer i = 1;
+        for(String title : titles){
+            Lead l = new Lead(
+                LastName = String.valueOf(i),
+                Company = 'Test Account ' + i,
+                Status = 'Open - Not Contacted',
+                Title = title);
+                leadList.add(l);
+                i++;
+            }
+            insert leadList;
+        }
+        
     /**
      * Test Method: testHandleTitleNormalization
      * 
@@ -38,11 +64,7 @@ public with sharing class LeadTriggerTest {
      *
      * Test Scenarios:
      * 1. Positive Tests:
-     *    - Titles containing the following terms should be normalized:
-     *      - 'VP of Sales' -> 'Vice President'
-     *      - 'Head of Department' -> 'Manager'
-     *      - 'Chief Marketing Officer' -> 'Executive'
-     *      - 'Deputy Manager' -> 'Assistant'
+     *    - Titles containing the predefined terms should be normalized:
      *    - Assert that the title is changed correctly based on the keyword it contains.
      *
      * 2. Negative Tests:
@@ -51,21 +73,32 @@ public with sharing class LeadTriggerTest {
      *    - Assert that the title remains the same when no match is found.
      *
      * 3. Edge Case Tests:
-     *    - Test for empty, null, or invalid title inputs to ensure they are handled without exceptions.
-     *    - Test for case-insensitive matches (e.g., 'Vp', 'MANAGE', etc.) to ensure normalization works regardless of capitalization.
-     *    - Test for extra spaces or special characters around the title (e.g., '   VP  ') to verify proper handling.
-     *
-     * Assertions:
-     * - Positive tests should assert that the title is normalized to the expected value.
-     * - Negative tests should assert that the title remains unchanged when no matching criteria are found.
-     * - Edge cases should assert that no exceptions are thrown and proper handling occurs for null/empty titles.
+     *    - Test for case-insensitive matches (e.g., 'Vp', 'EXEC', etc.) to ensure normalization works regardless of capitalization.
      */
-
     @isTest
     static void TestLeadTrigger_handleTitleNormalization() {
-        // TO DO: implement unit testhandleTitleNormalization(List<Lead> leadsToNormalize)
-        //create data
-        //run test
+        // Data created and inserted in @TestSetup        
         //check results
+        List<String> acceptableTitles = new List<String>{'Analyst', 'Software Engineer', 'Consultant'};
+        List<Lead> insertedLeads = new List<Lead>([SELECT Id, LastName, Title FROM Lead]);
+        for(Lead l : insertedLeads){
+            if(Integer.valueOf(l.LastName) <=3){
+                System.assertEquals('Vice President', l.Title, 'Normalization for Vice President titles is not working properly');
+            } else if (Integer.valueOf(l.LastName) <= 5){
+                System.assertEquals('Manager', l.Title, 'Normalization for Manager titles is not working properly');
+                
+            } else if (Integer.valueOf(l.LastName) <= 7){
+                System.assertEquals('Executive', l.Title, 'Normalization for Executive titles is not working properly');
+                
+            }else if (Integer.valueOf(l.LastName) <= 10){
+                System.assertEquals('Assistant', l.Title, 'Normalization for Assistant titles is not working properly');
+                
+            } else {
+                Assert.isTrue(acceptableTitles.contains(l.Title), 'Normalization process changed a title errantly');
+            }
+            
+        }
     }
+
+    
 }
