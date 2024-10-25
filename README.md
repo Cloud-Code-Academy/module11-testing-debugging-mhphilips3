@@ -1,3 +1,9 @@
+Observations:
+1. Creating the data individually for each test method is doable, but I tried to implement the @TestSetup process to create data for all the tests (just to get the practice with a new concept).  I ran into some difficulties (maybe all conceptual) with pulling that data into the test methods in a way that made sense to test individual methods rather than an "integration" test.  The testing worked, but I wasn't satisfied with that.  The difficulty arose because of testing Triggers.
+    a. I decided to switch, then, to how I think a "Data Factory" might work, which is a bit of a guess, but still gives me some reps in creating.
+
+
+
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=16642985&assignment_repo_type=AssignmentRepo)
 # Developer Kickstart: Testing and Debugging
 This repository is an essential segment of the Developer Kickstart curriculum at Cloud Code Academy. Tailored specifically for up-and-coming Salesforce developers, this module plunges into the crucial aspects of testing and debugging, underscoring the necessity of robust test classes, effective debugging strategies, and the maintenance of high code coverage.

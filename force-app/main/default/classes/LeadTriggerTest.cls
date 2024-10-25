@@ -23,48 +23,48 @@
 public with sharing class LeadTriggerTest {
 
     
-    @TestSetup
-    static void makeData(){
-        List<Lead> leadList = new List<Lead>();
-        List<String> titles = new List<String>{
-            'Vp of Sales', 'V.P. Marketing', 
-            'Mgr of Operations', 'Head of Department',  
-            'EXEC dir', 'Dog Financial Officer', 
-            'Jr Analyst', 'Deputy Advisor', 
-            'Consultant'};
+    // @TestSetup
+    // static void makeData(){
+    //     List<Lead> leadList = new List<Lead>();
+    //     List<String> titles = new List<String>{
+    //         'Vp of Sales', 'V.P. Marketing', 
+    //         'Mgr of Operations', 'Head of Department',  
+    //         'EXEC dir', 'Dog Financial Officer', 
+    //         'Jr Analyst', 'Deputy Advisor', 
+    //         'Consultant'};
         
 
-        Integer i = 1;
-        for(String title : titles){
-            Lead l = new Lead(
-                LastName = String.valueOf(i),
-                Company = 'Test Account ' + i,
-                Status = 'Open - Not Contacted',
-                Title = title);
-            if (i == 1){
-                l.LeadSource = 'Website';
-                l.Email = 'test1@example.com';
-                l.Industry = 'Technology';
-                l.Phone = '123-456-789';
-                // All criteria met --> should get 18 points
-            } else if (i == 2) {
-                l.LeadSource = 'Website';
-                l.Email = 'test2@example.com';
-                // No phone or Technology industry --> should get 3 points
-            } else if (i == 3) {                
-                l.Phone = '123-456-789';
-                // No email, Technology industry, leadsource --> should get 5 points    
-            } else if (i == 4) {
-                l.Industry = 'Technology';
-                l.Phone = '123-456-789';
-                //No email or Website source --> should get 15 points    
-            }
-                leadList.add(l);
-                i++;
-            }
-            insert leadList; 
-            System.debug('in setup ***********' + leadList.size());         
-        }
+    //     Integer i = 1;
+    //     for(String title : titles){
+    //         Lead l = new Lead(
+    //             LastName = String.valueOf(i),
+    //             Company = 'Test Account ' + i,
+    //             Status = 'Open - Not Contacted',
+    //             Title = title);
+    //         if (i == 1){
+    //             l.LeadSource = 'Website';
+    //             l.Email = 'test1@example.com';
+    //             l.Industry = 'Technology';
+    //             l.Phone = '123-456-789';
+    //             // All criteria met --> should get 18 points
+    //         } else if (i == 2) {
+    //             l.LeadSource = 'Website';
+    //             l.Email = 'test2@example.com';
+    //             // No phone or Technology industry --> should get 3 points
+    //         } else if (i == 3) {                
+    //             l.Phone = '123-456-789';
+    //             // No email, Technology industry, leadsource --> should get 5 points    
+    //         } else if (i == 4) {
+    //             l.Industry = 'Technology';
+    //             l.Phone = '123-456-789';
+    //             //No email or Website source --> should get 15 points    
+    //         }
+    //             leadList.add(l);
+    //             i++;
+    //         }
+    //         insert leadList; 
+    //         System.debug('in setup ***********' + leadList.size());         
+        // }
         
     /**
      * Test Method: testHandleTitleNormalization
@@ -95,37 +95,35 @@ public with sharing class LeadTriggerTest {
      */
     @isTest
     static void testLeadTrigger_handleTitleNormalization() {
-        
-        List<Lead> leadList = new List<Lead> ([SELECT Id, LastName, Title FROM Lead]);
+        //Get test data
+        List<Lead> leadList = TestDataFactory.createLeadData();
 
+        // Test Trigger Handler method (Before Insert & Before Update)
         Test.startTest();
         LeadTriggerHandler.handleTitleNormalization(leadList);
-        System.debug('in test*************' + leadList.size());
         Test.stopTest();
-        //check results
-        
 
+        //check results
         for(Lead l : leadList){
-            if(Integer.valueOf(l.LastName) <=3){
+            if(Integer.valueOf(l.LastName) <=2){
                 Assert.areEqual('Vice President', l.Title, 'Normalization for Vice President titles is not working properly');
-            } else if (Integer.valueOf(l.LastName) <= 5){
+            } else if (Integer.valueOf(l.LastName) <= 4){
                 Assert.areEqual('Manager', l.Title, 'Normalization for Manager titles is not working properly');
                 
-            } else if (Integer.valueOf(l.LastName) <= 7){
+            } else if (Integer.valueOf(l.LastName) <= 6){
                 Assert.areEqual('Executive', l.Title, 'Normalization for Executive titles is not working properly');
                 
-            }else if (Integer.valueOf(l.LastName) <= 10){
+            }else if (Integer.valueOf(l.LastName) <= 8){
                 Assert.areEqual('Assistant', l.Title, 'Normalization for Assistant titles is not working properly');
                 
             } else {
                 Assert.areEqual('Consultant', l.Title, 'Normalization process changed a title errantly');
-            }
-            
+            }            
         }
     }
 
     @isTest
-    static void TestLeadTrigger_handleAutoLeadScoring(){
+    static void testLeadTrigger_handleAutoLeadScoring(){
         //get data
         List<Lead> leadList = new List<Lead>([SELECT Id, LastName, Industry, Phone, Email, LeadSource, Lead_Score__c FROM Lead LIMIT 5]);
 
