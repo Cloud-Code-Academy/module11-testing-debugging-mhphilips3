@@ -25,16 +25,15 @@ public with sharing class LeadTriggerTest {
     
     @TestSetup
     static void makeData(){
-        
-        List<String> titles = new List<String>{
-            'Vp of Sales', 'V.P. Marketing', 'Vice President of Engineering', 
-            'Mgr of Operations', 'Head of Department',  
-            'EXEC dir', 'Chief Financial Officer', 
-            'Assistant to the CEO', 'Jr Analyst', 'Deputy Advisor', 
-            'Analyst', 'Software Engineer', 'Consultant'
-        };
-        
         List<Lead> leadList = new List<Lead>();
+        List<String> titles = new List<String>{
+            'Vp of Sales', 'V.P. Marketing', 
+            'Mgr of Operations', 'Head of Department',  
+            'EXEC dir', 'Dog Financial Officer', 
+            'Jr Analyst', 'Deputy Advisor', 
+            'Consultant'};
+        
+
         Integer i = 1;
         for(String title : titles){
             Lead l = new Lead(
@@ -42,10 +41,29 @@ public with sharing class LeadTriggerTest {
                 Company = 'Test Account ' + i,
                 Status = 'Open - Not Contacted',
                 Title = title);
+            if (i == 1){
+                l.LeadSource = 'Website';
+                l.Email = 'test1@example.com';
+                l.Industry = 'Technology';
+                l.Phone = '123-456-789';
+                // All criteria met --> should get 18 points
+            } else if (i == 2) {
+                l.LeadSource = 'Website';
+                l.Email = 'test2@example.com';
+                // No phone or Technology industry --> should get 3 points
+            } else if (i == 3) {                
+                l.Phone = '123-456-789';
+                // No email, Technology industry, leadsource --> should get 5 points    
+            } else if (i == 4) {
+                l.Industry = 'Technology';
+                l.Phone = '123-456-789';
+                //No email or Website source --> should get 15 points    
+            }
                 leadList.add(l);
                 i++;
             }
-            insert leadList;
+            insert leadList; 
+            System.debug('in setup ***********' + leadList.size());         
         }
         
     /**
@@ -76,29 +94,42 @@ public with sharing class LeadTriggerTest {
      *    - Test for case-insensitive matches (e.g., 'Vp', 'EXEC', etc.) to ensure normalization works regardless of capitalization.
      */
     @isTest
-    static void TestLeadTrigger_handleTitleNormalization() {
-        // Data created and inserted in @TestSetup        
+    static void testLeadTrigger_handleTitleNormalization() {
+        
+        List<Lead> leadList = new List<Lead> ([SELECT Id, LastName, Title FROM Lead]);
+
+        Test.startTest();
+        LeadTriggerHandler.handleTitleNormalization(leadList);
+        System.debug('in test*************' + leadList.size());
+        Test.stopTest();
         //check results
-        List<String> acceptableTitles = new List<String>{'Analyst', 'Software Engineer', 'Consultant'};
-        List<Lead> insertedLeads = new List<Lead>([SELECT Id, LastName, Title FROM Lead]);
-        for(Lead l : insertedLeads){
+        
+
+        for(Lead l : leadList){
             if(Integer.valueOf(l.LastName) <=3){
-                System.assertEquals('Vice President', l.Title, 'Normalization for Vice President titles is not working properly');
+                Assert.areEqual('Vice President', l.Title, 'Normalization for Vice President titles is not working properly');
             } else if (Integer.valueOf(l.LastName) <= 5){
-                System.assertEquals('Manager', l.Title, 'Normalization for Manager titles is not working properly');
+                Assert.areEqual('Manager', l.Title, 'Normalization for Manager titles is not working properly');
                 
             } else if (Integer.valueOf(l.LastName) <= 7){
-                System.assertEquals('Executive', l.Title, 'Normalization for Executive titles is not working properly');
+                Assert.areEqual('Executive', l.Title, 'Normalization for Executive titles is not working properly');
                 
             }else if (Integer.valueOf(l.LastName) <= 10){
-                System.assertEquals('Assistant', l.Title, 'Normalization for Assistant titles is not working properly');
+                Assert.areEqual('Assistant', l.Title, 'Normalization for Assistant titles is not working properly');
                 
             } else {
-                Assert.isTrue(acceptableTitles.contains(l.Title), 'Normalization process changed a title errantly');
+                Assert.areEqual('Consultant', l.Title, 'Normalization process changed a title errantly');
             }
             
         }
     }
 
-    
+    @isTest
+    static void TestLeadTrigger_handleAutoLeadScoring(){
+        //get data
+        List<Lead> leadList = new List<Lead>([SELECT Id, LastName, Industry, Phone, Email, LeadSource, Lead_Score__c FROM Lead LIMIT 5]);
+
+        //run test
+
+    }
 }

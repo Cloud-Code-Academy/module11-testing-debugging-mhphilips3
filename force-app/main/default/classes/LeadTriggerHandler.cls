@@ -31,6 +31,7 @@ public with sharing class LeadTriggerHandler {
 	 *   change the title to 'Assistant'.
 	 */
 	public static void handleTitleNormalization(List<Lead> leadsToNormalize) {
+		System.debug('in handler**************' + leadsToNormalize.size());
 		for (Lead ld : leadsToNormalize) {
 			if (ld.Title.containsIgnoreCase('vp') ||
 			    ld.Title.containsIgnoreCase('v.p.') || 
