@@ -22,49 +22,6 @@
 @isTest
 public with sharing class LeadTriggerTest {
 
-    
-    // @TestSetup
-    // static void makeData(){
-    //     List<Lead> leadList = new List<Lead>();
-    //     List<String> titles = new List<String>{
-    //         'Vp of Sales', 'V.P. Marketing', 
-    //         'Mgr of Operations', 'Head of Department',  
-    //         'EXEC dir', 'Dog Financial Officer', 
-    //         'Jr Analyst', 'Deputy Advisor', 
-    //         'Consultant'};
-        
-
-    //     Integer i = 1;
-    //     for(String title : titles){
-    //         Lead l = new Lead(
-    //             LastName = String.valueOf(i),
-    //             Company = 'Test Account ' + i,
-    //             Status = 'Open - Not Contacted',
-    //             Title = title);
-    //         if (i == 1){
-    //             l.LeadSource = 'Website';
-    //             l.Email = 'test1@example.com';
-    //             l.Industry = 'Technology';
-    //             l.Phone = '123-456-789';
-    //             // All criteria met --> should get 18 points
-    //         } else if (i == 2) {
-    //             l.LeadSource = 'Website';
-    //             l.Email = 'test2@example.com';
-    //             // No phone or Technology industry --> should get 3 points
-    //         } else if (i == 3) {                
-    //             l.Phone = '123-456-789';
-    //             // No email, Technology industry, leadsource --> should get 5 points    
-    //         } else if (i == 4) {
-    //             l.Industry = 'Technology';
-    //             l.Phone = '123-456-789';
-    //             //No email or Website source --> should get 15 points    
-    //         }
-    //             leadList.add(l);
-    //             i++;
-    //         }
-    //         insert leadList; 
-    //         System.debug('in setup ***********' + leadList.size());         
-        // }
         
     /**
      * Test Method: testHandleTitleNormalization
@@ -74,23 +31,17 @@ public with sharing class LeadTriggerTest {
      * based on specific criteria provided. The goal is to ensure that titles containing certain keywords 
      * are standardized and others remain unchanged.
      * 
-     * Criteria for Normalization:
-     * - If the title contains terms like 'vp', 'v.p.', or 'vice president', it should be changed to 'Vice President'.
-     * - If the title contains terms like 'mgr', 'manage', or 'head of department', it should be changed to 'Manager'.
-     * - If the title contains terms like 'exec', 'chief', or 'head', it should be changed to 'Executive'.
-     * - If the title contains terms like 'assist', 'deputy', or 'jr', it should be changed to 'Assistant'.
-     *
      * Test Scenarios:
      * 1. Positive Tests:
      *    - Titles containing the predefined terms should be normalized:
      *    - Assert that the title is changed correctly based on the keyword it contains.
      *
-     * 2. Negative Tests:
+     * 2. Negative Test:
      *    - Titles that do not contain any of the specified terms should remain unchanged:
-     *      - 'Analyst', 'Consultant', 'Engineer', etc. should not be modified.
+     *      - 'Consultant' should not be modified.
      *    - Assert that the title remains the same when no match is found.
      *
-     * 3. Edge Case Tests:
+     * 3. Edge Case Test:
      *    - Test for case-insensitive matches (e.g., 'Vp', 'EXEC', etc.) to ensure normalization works regardless of capitalization.
      */
     @isTest
@@ -122,12 +73,99 @@ public with sharing class LeadTriggerTest {
         }
     }
 
+        /**
+     * Test Method: testHandleAutoLeadScoring
+     * 
+     * Purpose:
+     * This test verifies that the handleAutoLeadScoring method correctly assigns scores to leads
+     * based on specific criteria. The goal is to ensure that the lead score is calculated accurately,
+     * with a maximum possible score of 18, and is stored in the Lead_Score__c field.
+     * 
+     * Test Scenarios:
+     * 1. Positive Tests:
+     *    - Leads that meet all criteria should have a score of 18:
+     *      - Verify that the score is computed correctly when the lead has a website source, an email, a phone number, and belongs to the 'Technology' industry.
+     *    - Leads that meet partial criteria should have the appropriate score:
+     *      - Verify that the score is computed correctly when the lead meets only one or two of the conditions (e.g., only phone number or only industry).
+     *
+     * 2. Negative Tests:
+     *    - Leads that do not meet any criteria should have a score of 0:
+     *      - Verify that no points are assigned when the lead does not have a website source, no email, no phone, and does not belong to the 'Technology' industry.
+    */
     @isTest
     static void testLeadTrigger_handleAutoLeadScoring(){
         //get data
-        List<Lead> leadList = new List<Lead>([SELECT Id, LastName, Industry, Phone, Email, LeadSource, Lead_Score__c FROM Lead LIMIT 5]);
-
+        List<Lead> leadList = TestDataFactory.createLeadData();
+        
         //run test
+        Test.startTest();
+        LeadTriggerHandler.handleAutoLeadScoring(leadList);
+        Test.stopTest();
 
+        //verify results
+        for(Lead l : leadList){
+            if(Integer.valueOf(l.LastName) == 1){
+                Assert.areEqual(18, l.Lead_Score__c, 'Lead Score is not calculating correctly');
+            } else if (Integer.valueOf(l.LastName) == 2){
+                Assert.areEqual(3, l.Lead_Score__c, 'Lead Score is not calculating correctly');
+                
+            } else if (Integer.valueOf(l.LastName) == 3){
+                Assert.areEqual(5, l.Lead_Score__c, 'Lead Score is not calculating correctly');
+                
+            }else if (Integer.valueOf(l.LastName) == 4){
+                Assert.areEqual(15, l.Lead_Score__c, 'Lead Score is not calculating correctly');
+                
+            } else {
+                Assert.areEqual(0, l.Lead_Score__c, 'Lead Score is not calculating correctly');
+            }
+        }
     }
 }
+
+    /**
+     * Test Method: testHandleLeadAutoConvert
+     * 
+     * Purpose:
+     * This test verifies that the handleLeadAutoConvert method automatically converts Leads 
+     * into Contacts when a matching Contact with the same email address is found. It also ensures 
+     * that Leads are correctly merged with an existing Contact and unconverted if either zero or multiple 
+     * Contacts with the same email are found.
+     * 
+     * Criteria for Lead Conversion:
+     * - The method monitors the "Email" field on the Lead object for new Lead creation or updates.
+     * - On Lead creation or email update, search the Contact object for matching records with the same email address.
+     * - If a single matching Contact is identified:
+     *   - Automatically convert the Lead.
+     *   - Merge Lead data with the existing Contact, preserving critical Contact details.
+     * - If multiple Contacts with the same email are found or no match is identified, leave the Lead unconverted.
+     * 
+     * Test Scenarios:
+     * 1. Positive Tests:
+     *    - A Lead with a unique matching Contact:
+     *      - Verify that a Lead with an email that matches a single Contact's email is automatically converted.
+     *      - Verify that Lead details are merged with the existing Contact without losing crucial Contact information.
+     * 
+     * 2. Negative Tests:
+     *    - A Lead with no matching Contact:
+     *      - Ensure that Leads with no matching Contact are not converted and remain as Leads.
+     *    
+     *    - A Lead with multiple matching Contacts:
+     *      - Ensure that Leads with more than one matching Contact are not converted and remain as Leads.
+     * 
+     * 3. Edge Case Tests:
+     *    - Case-insensitive email match:
+     *      - Ensure that the method works regardless of capitalization in the email field (e.g., 'test@example.com' vs 'TEST@EXAMPLE.COM').
+     * 
+     *    - Leads with missing or null emails:
+     *      - Verify that Leads with null or missing email fields are not processed for conversion and remain as Leads.
+     * 
+     *    - No Contacts in the system:
+     *      - Verify that the method behaves correctly if no Contacts exist in the system when Leads are created or updated.
+     * 
+     *    - Lead creation and update scenarios:
+     *      - Verify that the method triggers correctly on both Lead creation and Lead email updates, checking for the same email match behavior.
+     *
+     * 4. Integration Tests:
+     *    - Use Salesforce’s "Converted Lead" report:
+     *      - Verify that the conversion can be seen in the "Converted Lead" report, confirming that the Lead was converted to the correct Contact.
+     */
