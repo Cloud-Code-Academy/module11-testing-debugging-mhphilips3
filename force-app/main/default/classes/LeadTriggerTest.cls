@@ -51,7 +51,7 @@ public with sharing class LeadTriggerTest {
 
         // Test Trigger Handler method (Before Insert & Before Update)
         Test.startTest();
-        LeadTriggerHandler.handleTitleNormalization(leadList);
+        LeadUtils.handleTitleNormalization(leadList);
         Test.stopTest();
 
         //check results
@@ -99,7 +99,7 @@ public with sharing class LeadTriggerTest {
         
         //run test
         Test.startTest();
-        LeadTriggerHandler.handleAutoLeadScoring(leadList);
+        LeadUtils.handleAutoLeadScoring(leadList);
         Test.stopTest();
 
         //verify results
@@ -120,6 +120,11 @@ public with sharing class LeadTriggerTest {
             }
         }
     }
+
+    @isTest
+    static void testLeadTrigger_handleLeadAutoConvert() {
+        //Get test data
+        
 }
 
     /**
