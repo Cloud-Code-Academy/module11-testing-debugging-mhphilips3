@@ -14,7 +14,67 @@
  * https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_dml_convertLead.htm
  * https://developer.salesforce.com/docs/atlas.en-us.apexref.meta/apexref/apex_methods_system_test.htm
  */
-public with sharing class LeadTriggerHandler {
+
+/**
+ * LeadTriggerHandler class extends the TriggerHandler framework to handle Lead trigger events.
+ * 
+ * This class handles different trigger events on the Lead object:
+ * - beforeInsert: Normalizes the Lead title and scores the Lead based on defined criteria.
+ * - beforeUpdate: Normalizes the Lead title and updates the Lead score if required.
+ * - afterInsert: Automatically converts the Lead to a Contact if a single matching Contact is found by email.
+ * - afterUpdate: Attempts Lead auto-conversion based on email updates.
+ */ 
+public with sharing class LeadTriggerHandler extends TriggerHandler{
+
+	private List<Lead> newLeadList;
+
+	public LeadTriggerHandler(){
+		this.newLeadList = (List<Lead>)Trigger.new;
+	}
+
+
+	/**
+    * beforeInsert && beforeUpdate handlers
+    * Normalizes the Lead's title and assigns a score to the Lead before it is inserted or updated.
+    * 
+    * Business Rule 1: Before a Lead is inserted or updated, standardize the title to a predefined set 
+    * (e.g., 'Vice President', 'Manager', 'Executive', 'Assistant') based on common variations.
+    * 
+    * Business Rule 2: Assign a score to the Lead based on the following criteria:
+    * - +3 points if the Lead Source is 'Website' and the Lead has an email.
+    * - +5 points if the Lead has a phone number.
+    * - +10 points if the Lead's Industry is 'Technology'.
+    */
+	public override void beforeInsert(){
+
+	}
+
+	public override void beforeUpdate(){
+
+	}
+
+    /**
+    * afterInsert && afterUpdate handlers
+    * Automatically converts the Lead to a Contact if an existing Contact with a matching email is found.
+    * 
+    * Business Rule 1: After a Lead is inserted, check if the Lead's email matches an existing Contact's email. 
+    * If a single matching Contact is found, convert the Lead into the Contact and merge their details.
+    * 
+    * Business Rule 2: If multiple Contacts share the same email or if no match is found, the Lead 
+    * remains unconverted and no changes are made.
+    */
+	public override void afterInsert(){
+
+	}
+
+	public override void afterUpdate(){
+
+	}
+
+
+
+
+
 	/* 
 	 * Question 1
 	 * Requirement Lead Title Normalization - handleTitleNormalization
@@ -117,14 +177,21 @@ public with sharing class LeadTriggerHandler {
 		// Step 1: Gather all lead emails
         Map<Id,String> leadToEmailMap = new Map<Id,String>();
 		for (Lead lead : leads) {
-			leadToEmailMap.put(lead.Id, lead.Email);
+			if (lead.Email != null){ // avoid mapping leads that lack an email address
+				leadToEmailMap.put(lead.Id, lead.Email);
+			}
 		}
+
+		if (leadToEmailMap.isEmpty()){
+			return; // avoids further processing if no email addresses exist
+		}
+
 
 		// Step 2: Find matching contacts based on email
 		Map<String, Contact> emailToContactMap = new Map<String, Contact>();
 		for (Contact c : [SELECT Id, Email, AccountId FROM Contact WHERE Email IN :leadToEmailMap.values()]) {
 			if (!emailToContactMap.containsKey(c.Email)) {
-				emailToContactMap.put(c.Email, c);
+				emailToContactMap.put(c.Email, c); // First Match
 			} else {
 				// If we found another contact with the same email, we don't auto-convert.
 				// So we remove the email from the map.
