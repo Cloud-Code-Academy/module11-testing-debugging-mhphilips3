@@ -8,7 +8,10 @@ public with sharing class LeadUtils {
     public static void handleTitleNormalization(List<Lead> leadsToNormalize) {
 		System.debug('in handler**************' + leadsToNormalize.size());
 		for (Lead ld : leadsToNormalize) {
-			if (ld.Title.containsIgnoreCase('vp') ||
+			if (ld.Title == null){
+				continue;
+			} else if (
+				ld.Title.containsIgnoreCase('vp') ||
                 ld.Title.containsIgnoreCase('v.p.') || 
 				ld.Title.containsIgnoreCase('vice president')
 			) {
@@ -73,7 +76,6 @@ public with sharing class LeadUtils {
 		if (leadToEmailMap.isEmpty()){
 			return; // avoids further processing if no email addresses exist
 		}
-
 
 		// Step 2: Find matching contacts based on email
 		Map<String, Contact> emailToContactMap = new Map<String, Contact>();

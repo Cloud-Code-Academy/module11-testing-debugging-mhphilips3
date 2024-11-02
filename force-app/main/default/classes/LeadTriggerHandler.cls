@@ -30,10 +30,8 @@ public with sharing class LeadTriggerHandler extends TriggerHandler{
     * - +10 points if the Lead's Industry is 'Technology'.
     */
 	public override void beforeInsert(){
-		LeadUtils.handleTitleNormalization(leadList);
 		LeadUtils.handleAutoLeadScoring(leadList);
-		
-		
+		LeadUtils.handleTitleNormalization(leadList);		
 	}
 	
 	public override void beforeUpdate(){

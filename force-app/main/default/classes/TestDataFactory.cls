@@ -38,5 +38,42 @@ public with sharing class TestDataFactory {
                 i++;
             }
         return leadList;
-    }            
+    }  
+    
+    public static List<Lead> createLeadDataInsert(){
+        List<Lead> leadList = createLeadData();
+        leadList[2].Email = 'test3@example.com';
+        return leadList;
+    }
+
+    public static List<Lead> createLeadDataUpdate(){
+        List<Lead> leadList = createLeadData();
+        for(Integer i = 8; i>=0; i--){
+            if(i > 2){
+                leadList.remove(i);
+            }
+            else {
+                leadList[i].Email = 'nomatch@example.com';
+            }
+        }
+        return leadList;
+    }
+
+    public static Map<String, Contact> createContactData(){
+        Account acc = new Account(Name = 'Test Account');
+        insert acc;
+        Map<String, Contact> contDataMap = new Map<String, Contact>();
+        for(Integer i=1; i<4; i++){
+            Contact con = new Contact(
+                LastName = String.valueOf(i),
+                AccountId = acc.id,
+                Email = 'test' + i + '@example.com');
+            if (i==3){
+                con.Email = 'test2@example.com'; //create a duplicate contact email
+            }
+            contDataMap.put(con.LastName, con);
+        }
+        insert contDataMap.values();
+        return contDataMap;
+    }
 }

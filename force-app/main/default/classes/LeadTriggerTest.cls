@@ -121,56 +121,118 @@ public with sharing class LeadTriggerTest {
         }
     }
 
+    /**
+    * Test Methods: testHandleLeadAutoConvert_onInsert & testHandleLeadAutoConvert_onUpdate
+    * 
+    * Purpose:
+    * These tests verify that the handleLeadAutoConvert method automatically converts Leads 
+    * into Contacts when a matching Contact with the same email address is found. It also ensures 
+    * that Leads are correctly merged with an existing Contact and unconverted if either zero or multiple 
+    * Contacts with the same email are found.
+    * 
+    * Criteria for Lead Conversion:
+    * - The method monitors the "Email" field on the Lead object for new Lead creation or updates.
+    * - On Lead creation or email update, search the Contact object for matching records with the same email address.
+    * - If a single matching Contact is identified:
+    *   - Automatically convert the Lead.
+    *   - Merge Lead data with the existing Contact, preserving critical Contact details.
+    * - If multiple Contacts with the same email are found or no match is identified, leave the Lead unconverted.
+    * 
+    * Test Scenarios:
+    * 1. Positive Tests:
+    *    - A Lead with a unique matching Contact:
+    *      - Verify that a Lead with an email that matches a single Contact's email is automatically converted.
+    *      - Verify that Lead details are merged with the existing Contact without losing crucial Contact information.
+    * 
+    * 2. Negative Tests:
+    *    - A Lead with no matching Contact:
+    *      - Ensure that Leads with no matching Contact are not converted and remain as Leads.
+    *    
+    *    - A Lead with multiple matching Contacts:
+    *      - Ensure that Leads with more than one matching Contact are not converted and remain as Leads.
+    * 
+    * 3. Edge Case Test:
+    *    - Leads with missing or null emails:
+    *      - Verify that Leads with null or missing email fields are not processed for conversion and remain as Leads.
+    * 
+    */
     @isTest
-    static void testLeadTrigger_handleLeadAutoConvert() {
+    static void testLeadTrigger_handleLeadAutoConvert_onInsert() {
         //Get test data
+        Map<String, Contact> contactMap = TestDataFactory.createContactData();
+        List<Lead> leadList = TestDataFactory.createLeadDataInsert();
+
+        Test.startTest();
+        insert leadList;
+        Test.stopTest();
+
+        // verify results
+
+        List<Lead> insertedLeadList = new List<Lead>([SELECT Id, LastName, isConverted, ConvertedContactId From Lead]);
+        for (Lead l : insertedLeadList){
+            if (l.LastName == '1'){
+                //lead should convert with Contact with LastName '1'
+                Assert.isTrue(l.isConverted, 'Lead was not converted as expected');
+                Assert.areEqual(l.ConvertedContactId, contactMap.get('1').Id, 'Lead not converted to correct contact');
+
+            } else if (l.LastName == '2'){
+                //Lead's email matches email of multiple contacts, so shouldn't convert
+                Assert.isFalse(l.IsConverted, 'Lead should not have been converted');
+
+            } else if (l.LastName == '3'){
+                //Lead's email matches no contacts, so shouldn't convert
+                Assert.isFalse(l.IsConverted, 'Lead should not have been converted');
+
+            } else {
+                //Leads without emails shouldn't convert
+                Assert.isFalse(l.isConverted, 'Leads without email addresses should not auto convert');
+            }
+        }       
+    }
+
+    @isTest
+    static void testLeadTrigger_handleLeadAutoConvert_onUpdate(){
+        // get test data
+        Map<String, Contact> contactMap = TestDataFactory.createContactData();
+        List<Lead> leadsToInsert = TestDataFactory.createLeadDataUpdate();
+        insert leadsToInsert;
+
+        //query for inserted leads
+        List<Lead> leadsToUpdate = new List<Lead> ([SELECT Id, LastName, Email FROM Lead]);
+        //Update email addresses
+        for (Lead l : leadsToUpdate){
+            if (l.LastName == '1') {
+                l.Email = 'test1@example.com'; // should match and convert
+            } else if (l.LastName == '2'){
+                l.Email = 'test2@example.com'; // matches w/ 2 contacts, no conversion
+            } else {
+                l.Email = 'test3@example.com'; // no match should not convert
+            }
+        }
+
+        //run test
+        test.startTest();
+        update leadsToUpdate;
+        test.stopTest();
+
+        // Query for Updated Leads
+        List<Lead> leadsToVerify = [SELECT Id, LastName, isConverted, ConvertedContactId FROM Lead];
         
+        // Verify results
+        for(Lead l : leadsToVerify){
+            if (l.LastName == '1') {
+                // Lead email matches 1 contact --> should convert to proper contact
+                Assert.isTrue(l.isConverted, 'Lead did not convert properly');
+                Assert.areEqual(contactMap.get('1').Id, l.ConvertedContactId, 'Lead converted to wrong contact.');
+            } else if (l.LastName == '2'){
+                // Lead email matches 2 Contacts --> should not convert
+                Assert.isFalse(l.IsConverted, 'Lead did not remain unconverted.');
+            } else {
+                // Lead email matches 0 contacts --> should not convert
+                Assert.isFalse(l.IsConverted, 'Lead did not remain unconverted.');                
+            }
+        }
+    }
+
 }
 
-    /**
-     * Test Method: testHandleLeadAutoConvert
-     * 
-     * Purpose:
-     * This test verifies that the handleLeadAutoConvert method automatically converts Leads 
-     * into Contacts when a matching Contact with the same email address is found. It also ensures 
-     * that Leads are correctly merged with an existing Contact and unconverted if either zero or multiple 
-     * Contacts with the same email are found.
-     * 
-     * Criteria for Lead Conversion:
-     * - The method monitors the "Email" field on the Lead object for new Lead creation or updates.
-     * - On Lead creation or email update, search the Contact object for matching records with the same email address.
-     * - If a single matching Contact is identified:
-     *   - Automatically convert the Lead.
-     *   - Merge Lead data with the existing Contact, preserving critical Contact details.
-     * - If multiple Contacts with the same email are found or no match is identified, leave the Lead unconverted.
-     * 
-     * Test Scenarios:
-     * 1. Positive Tests:
-     *    - A Lead with a unique matching Contact:
-     *      - Verify that a Lead with an email that matches a single Contact's email is automatically converted.
-     *      - Verify that Lead details are merged with the existing Contact without losing crucial Contact information.
-     * 
-     * 2. Negative Tests:
-     *    - A Lead with no matching Contact:
-     *      - Ensure that Leads with no matching Contact are not converted and remain as Leads.
-     *    
-     *    - A Lead with multiple matching Contacts:
-     *      - Ensure that Leads with more than one matching Contact are not converted and remain as Leads.
-     * 
-     * 3. Edge Case Tests:
-     *    - Case-insensitive email match:
-     *      - Ensure that the method works regardless of capitalization in the email field (e.g., 'test@example.com' vs 'TEST@EXAMPLE.COM').
-     * 
-     *    - Leads with missing or null emails:
-     *      - Verify that Leads with null or missing email fields are not processed for conversion and remain as Leads.
-     * 
-     *    - No Contacts in the system:
-     *      - Verify that the method behaves correctly if no Contacts exist in the system when Leads are created or updated.
-     * 
-     *    - Lead creation and update scenarios:
-     *      - Verify that the method triggers correctly on both Lead creation and Lead email updates, checking for the same email match behavior.
-     *
-     * 4. Integration Tests:
-     *    - Use Salesforce’s "Converted Lead" report:
-     *      - Verify that the conversion can be seen in the "Converted Lead" report, confirming that the Lead was converted to the correct Contact.
-     */
