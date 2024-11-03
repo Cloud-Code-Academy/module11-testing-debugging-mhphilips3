@@ -21,7 +21,6 @@
  */
 @isTest
 public with sharing class LeadTriggerTest {
-
         
     /**
      * Test Method: testHandleTitleNormalization
@@ -47,6 +46,7 @@ public with sharing class LeadTriggerTest {
      */
     @isTest
     static void testLeadTrigger_handleTitleNormalization() {
+
         //Get test data
         List<Lead> leadList = TestDataFactory.createLeadData();
 
@@ -95,6 +95,7 @@ public with sharing class LeadTriggerTest {
     */
     @isTest
     static void testLeadTrigger_handleAutoLeadScoring(){
+
         //get data
         List<Lead> leadList = TestDataFactory.createLeadData();
         
@@ -159,6 +160,7 @@ public with sharing class LeadTriggerTest {
     */
     @isTest
     static void testLeadTrigger_handleLeadAutoConvert_onInsert() {
+
         //Get test data
         Map<String, Contact> contactMap = TestDataFactory.createContactData();
         List<Lead> leadList = TestDataFactory.createLeadDataInsert();
@@ -192,6 +194,7 @@ public with sharing class LeadTriggerTest {
 
     @isTest
     static void testLeadTrigger_handleLeadAutoConvert_onUpdate(){
+        
         // get test data
         Map<String, Contact> contactMap = TestDataFactory.createContactData();
         List<Lead> leadsToInsert = TestDataFactory.createLeadDataUpdate();
