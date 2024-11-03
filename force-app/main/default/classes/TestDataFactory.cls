@@ -1,5 +1,24 @@
+/**
+ * TestDataFactory
+ * 
+ * This utility class generates test data for use in the methods designed to thouroughly test the Lead Trigger.
+ * It provides methods to create leads, contacts, accounts, and other relevant records,
+ * ensuring consistent and reusable test data setup.
+ * 
+ * Each method is designed to produce data with specific characteristics or to
+ * support different test scenarios.
+ */
 public with sharing class TestDataFactory {
     
+    /**
+     * Method: createLeadData
+     * 
+     * Creates a list of 9 Lead records with varying titles, industries, lead sources, 
+     * and contact details. This method provides a diverse set of leads to test
+     * different lead scenarios, including scoring and title normalization.
+     * 
+     * @return List<Lead> - A list of leads with various attributes for testing.
+     */
     public static List<Lead> createLeadData(){
         List<Lead> leadList = new List<Lead>();
         List<String> titles = new List<String>{
@@ -40,12 +59,28 @@ public with sharing class TestDataFactory {
         return leadList;
     }  
     
+    /**
+     * Method: createLeadDataInsert
+     * 
+     * Modifies the Lead list created in the `createLeadData` method for use in testing the `handleLeadAutoConvert`
+     * process when triggered by inserting Leads.
+     * 
+     * @return List<Lead> - A list of leads for insert scenarios.
+     */
     public static List<Lead> createLeadDataInsert(){
         List<Lead> leadList = createLeadData();
         leadList[2].Email = 'test3@example.com';
         return leadList;
     }
 
+    /**
+     * Method: createLeadDataUpdate
+     * 
+     * Modifies the Lead list created in the `createLeadData` method for use in testing the `handleLeadAutoConvert`
+     * process when triggered by updating Leads.
+     * 
+     * @return List<Lead> - A list of leads for update scenarios.
+     */    
     public static List<Lead> createLeadDataUpdate(){
         List<Lead> leadList = createLeadData();
         for(Integer i = 8; i>=0; i--){
@@ -59,6 +94,12 @@ public with sharing class TestDataFactory {
         return leadList;
     }
 
+    /**
+     * Creates and inserts a map of Contact records with unique or 
+     * duplicate emails to test lead-to-contact matching.
+     * 
+     * @return Map<String, Contact> - A map of contacts keyed by LastName.
+     */    
     public static Map<String, Contact> createContactData(){
         Account acc = new Account(Name = 'Test Account');
         insert acc;

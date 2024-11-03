@@ -1,4 +1,3 @@
-
 /**
  * LeadTriggerHandler class extends the TriggerHandler framework to handle Lead trigger events.
  * 
@@ -14,8 +13,7 @@ public with sharing class LeadTriggerHandler extends TriggerHandler{
 	
 	public LeadTriggerHandler(){
 		this.leadList = (List<Lead>)Trigger.new;
-	}
-	
+	}	
 	
 	/**
     * beforeInsert && beforeUpdate handlers
@@ -51,8 +49,7 @@ public with sharing class LeadTriggerHandler extends TriggerHandler{
 	 */
 	public override void afterInsert(){
 
-		LeadUtils.handleLeadAutoConvert(leadList);
-		
+		LeadUtils.handleLeadAutoConvert(leadList);		
 	}
 	
 	public override void afterUpdate(){
@@ -65,15 +62,13 @@ public with sharing class LeadTriggerHandler extends TriggerHandler{
 			}
 			leadsToCheck.add(l);
 		}
-		LeadUtils.handleLeadAutoConvert(leadsToCheck);
-		
-	}
-	
-	
-	
+		LeadUtils.handleLeadAutoConvert(leadsToCheck);		
+	}	
 	
 	
 	/*
+	 * ORIGINAL HW INSTRUCTIONS:
+	 * 
 	 * The `LeadTriggerHandler` class contains methods designed to handle various business requirements around
 	 * the Lead object in Salesforce. This includes functionality like normalizing the title field of a lead, 
 	 * automatically scoring leads based on certain criteria, and auto-converting leads when certain conditions are met.

@@ -1,12 +1,21 @@
+/**
+* LeadUtils Class
+*
+* Provides utility methods for Lead processing to It is designed to offload and modularize logic
+* from the LeadTriggerHandler, improving code organization and reusability.  This includes logic
+* for Lead title normalization, lead scoring, and auto-conversion of leads based on matching 
+* contact emails.
+*/
 public with sharing class LeadUtils {
     
     /**
-    * Normalizes Lead Title fields upon Lead insert or update.
+    * Method: handleTitleNormalization
+	*
+	* Normalizes Lead Title fields upon Lead insert or update.
     * 
     * @param leadsToNormalize A list of Lead records
     */
     public static void handleTitleNormalization(List<Lead> leadsToNormalize) {
-		System.debug('in handler**************' + leadsToNormalize.size());
 		for (Lead ld : leadsToNormalize) {
 			if (ld.Title == null){
 				continue;
@@ -35,8 +44,11 @@ public with sharing class LeadUtils {
 			}
 		}
 	}
+
     /**
-    * Assigns a score to the Lead before it is inserted or updated.
+    * Method: handleAutoLeadScoring
+	*
+	* Assigns a score to the Lead before it is inserted or updated.
     * 
     * @param leadsToScore A list of Lead records
     */
@@ -59,7 +71,9 @@ public with sharing class LeadUtils {
 	}
 
     /**
-    * Automatically converts Leads, which contain an email address that matches that of an existing Contact.
+    * Method: handleLeadAutoConvert
+	*
+	* Automatically converts Leads, which contain an email address that matches that of an existing Contact.
     *   - Will not convert if there are multiple matching contacts 
     *   - Occurs on Lead insert or when a lead's email address has been updated.
     *
@@ -109,5 +123,4 @@ public with sharing class LeadUtils {
 			List<Database.LeadConvertResult> lcrs = Database.convertLead(leadConverts);
 		}
 	}
-
 }

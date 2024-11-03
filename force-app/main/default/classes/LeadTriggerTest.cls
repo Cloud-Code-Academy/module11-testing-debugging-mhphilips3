@@ -27,9 +27,10 @@ public with sharing class LeadTriggerTest {
      * Test Method: testHandleTitleNormalization
      * 
      * Purpose:
-     * This test verifies that the handleTitleNormalization method properly normalizes job titles 
-     * based on specific criteria provided. The goal is to ensure that titles containing certain keywords 
-     * are standardized and others remain unchanged.
+     * This test verifies that the `handleTitleNormalization` method in the `LeadUtils` class 
+     * properly normalizes job titles based on specific criteria. The goal is to ensure that 
+     * titles containing certain keywords are standardized, while others remain unchanged, 
+     * as triggered by the Lead Trigger.
      * 
      * Test Scenarios:
      * 1. Positive Tests:
@@ -73,13 +74,13 @@ public with sharing class LeadTriggerTest {
         }
     }
 
-        /**
+    /**
      * Test Method: testHandleAutoLeadScoring
      * 
      * Purpose:
-     * This test verifies that the handleAutoLeadScoring method correctly assigns scores to leads
+     * This test verifies that the `handleAutoLeadScoring` method in the `LeadUtils` classmethod correctly assigns scores to leads
      * based on specific criteria. The goal is to ensure that the lead score is calculated accurately,
-     * with a maximum possible score of 18, and is stored in the Lead_Score__c field.
+     * with a maximum possible score of 18, and is stored in the Lead_Score__c field, as triggered by the Lead Trigger.
      * 
      * Test Scenarios:
      * 1. Positive Tests:
@@ -125,10 +126,10 @@ public with sharing class LeadTriggerTest {
     * Test Methods: testHandleLeadAutoConvert_onInsert & testHandleLeadAutoConvert_onUpdate
     * 
     * Purpose:
-    * These tests verify that the handleLeadAutoConvert method automatically converts Leads 
+    * These tests verify that the `handleleadAutoConvert` method in the `LeadUtils` class automatically converts Leads 
     * into Contacts when a matching Contact with the same email address is found. It also ensures 
     * that Leads are correctly merged with an existing Contact and unconverted if either zero or multiple 
-    * Contacts with the same email are found.
+    * Contacts with the same email are found.  This process is associated with the Lead Trigger.
     * 
     * Criteria for Lead Conversion:
     * - The method monitors the "Email" field on the Lead object for new Lead creation or updates.
@@ -167,7 +168,6 @@ public with sharing class LeadTriggerTest {
         Test.stopTest();
 
         // verify results
-
         List<Lead> insertedLeadList = new List<Lead>([SELECT Id, LastName, isConverted, ConvertedContactId From Lead]);
         for (Lead l : insertedLeadList){
             if (l.LastName == '1'){
@@ -233,6 +233,5 @@ public with sharing class LeadTriggerTest {
             }
         }
     }
-
 }
 
