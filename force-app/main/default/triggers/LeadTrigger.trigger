@@ -1,4 +1,23 @@
 /*
+ * LeadTrigger Overview
+ *
+ * LeadTrigger has been refactored to work within a Trigger Framework.  This happens in conjunction with 
+ *    TriggerHandler.cls and LeadTriggerHandler.cls.
+ * LeadTriggerHandler.cls utilizes the LeadUtils class to assist with certain operations.
+ * <<<for reference, the original CCA Instructions have been moved to the bottom of this file>>>
+*/
+
+trigger LeadTrigger on Lead(before insert, before update, after insert, after update) {
+	
+	LeadTriggerHandler handler = new LeadTriggerHandler();
+	handler.run();
+}
+
+
+
+
+
+/*  ORIGINAL CCA INSTRUCTION
  * The `LeadTrigger` is designed to automate certain processes around the Lead object in Salesforce. 
  * This trigger invokes various methods from the `LeadTriggerHandler` class based on different trigger 
  * events like insert and update.
@@ -15,21 +34,3 @@
  * - It's essential to test the trigger thoroughly after making any changes to ensure its correct functionality.
  * - Debugging skills will be tested, so students should look out for discrepancies between the expected and actual behavior.
  */
-trigger LeadTrigger on Lead(before insert) {
-	switch on Trigger.operationType {
-		when BEFORE_INSERT {
-			LeadTriggerHandler.handleTitleNormalization(Trigger.new);
-			LeadTriggerHandler.handleAutoLeadScoring(Trigger.new);
-		}
-		when BEFORE_UPDATE {
-			LeadTriggerHandler.handleTitleNormalization(Trigger.new);
-			LeadTriggerHandler.handleAutoLeadScoring(Trigger.new);
-		}
-		when AFTER_INSERT {
-			LeadTriggerHandler.handleLeadAutoConvert(Trigger.new);
-		}
-		when AFTER_UPDATE {
-			LeadTriggerHandler.handleLeadAutoConvert(Trigger.new);
-		}
-	}
-}

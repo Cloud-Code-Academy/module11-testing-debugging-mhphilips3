@@ -1,3 +1,22 @@
+Observations:
+1. Creating the data individually for each test method is doable, but I tried to implement the @TestSetup process to create data for all the tests (just to get the practice with a new concept).  I ran into some difficulties (maybe all conceptual) with pulling that data into the test methods in a way that made sense to test individual methods rather than an "integration" test.  The testing worked, but I wasn't satisfied with that.  The difficulty arose because of testing Triggers.              
+    a. I decided to switch, then, to how I think a "Data Factory" might work, which is a bit of a guess, but still gives me some reps in creating.
+    b. Creating data this way may end up being a little more complicated, but it kept the Test Class a little cleaner and more readable.
+
+Decisions:
+1. I implemented a Trigger Framework (just for practice), so the solution will be found in the following files:
+    LeadTrigger.trigger -- remains the trigger.
+    TriggerHandler.cls -- this is the trigger framework we've used in past assignments
+    LeadTriggerHandler.cls -- this extends the TriggerHandler framework to handle Lead trigger events.
+    LeadUtils.cls -- this contains the helper methods that the LeadTriggerHandler class will use as a helper.
+    LeadTriggerTest.cls -- this remains the test class file.
+    TestDataFactory.cls -- this is a separate class that creates data for the test class methods to maintain a visually cleaner test class.
+2. I recognize the instructions suggested we utilize the custom report to validate that converted Leads were converted to the correct Contact.  I looked into that, but ultimately chose to go in another direction (asserting that the Lead's ConvertedContactId matched the correct Contact Id), which I thought was a more straightforward solution that also didn't require allowing the test to "see all data," which I believe is to be used as sparingly as possible.
+
+
+
+
+[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=16642985&assignment_repo_type=AssignmentRepo)
 # Developer Kickstart: Testing and Debugging
 This repository is an essential segment of the Developer Kickstart curriculum at Cloud Code Academy. Tailored specifically for up-and-coming Salesforce developers, this module plunges into the crucial aspects of testing and debugging, underscoring the necessity of robust test classes, effective debugging strategies, and the maintenance of high code coverage.
 
